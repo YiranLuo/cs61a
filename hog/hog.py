@@ -22,6 +22,19 @@ def roll_dice(num_rolls, dice=six_sided):
     assert num_rolls > 0, 'Must roll at least once.'
     # BEGIN PROBLEM 1
     "*** YOUR CODE HERE ***"
+    zero_flag = False
+    sum = 0
+    for i in range(num_rolls):
+        score = dice()
+        sum += score
+
+        if score == 1:
+            zero_flag = True
+    
+    if zero_flag:
+        return 1
+    else:
+        return sum
     # END PROBLEM 1
 
 
@@ -33,6 +46,19 @@ def free_bacon(score):
     assert score < 100, 'The game should be over.'
     # BEGIN PROBLEM 2
     "*** YOUR CODE HERE ***"
+    score_cubed = score ** 3
+    len_of_digits = len(str(score_cubed))
+    sum_of_digits = 0
+    pos_or_neg = 1
+    for i in range(len_of_digits - 1, -1, -1):
+        curr_digit, score_cubed = score_cubed // (10 ** i), score_cubed % (10 ** i)
+        sum_of_digits += curr_digit * pos_or_neg
+        pos_or_neg = 0 - pos_or_neg
+    
+    return abs(sum_of_digits) + 1
+
+        
+
     # END PROBLEM 2
 
 
@@ -51,6 +77,11 @@ def take_turn(num_rolls, opponent_score, dice=six_sided):
     assert opponent_score < 100, 'The game should be over.'
     # BEGIN PROBLEM 3
     "*** YOUR CODE HERE ***"
+    if num_rolls == 0:
+        score = free_bacon(opponent_score)
+    else:
+        score = roll_dice(num_rolls, dice)
+    return score
     # END PROBLEM 3
 
 
@@ -60,6 +91,11 @@ def is_swap(player_score, opponent_score):
     """
     # BEGIN PROBLEM 4
     "*** YOUR CODE HERE ***"
+    excitement = 3 ** (player_score + opponent_score)
+    excitement_len = len(str(excitement))
+    lowest_digit = excitement % 10
+    highest_digit = excitement // (10 ** (excitement_len - 1))
+    return lowest_digit == highest_digit
     # END PROBLEM 4
 
 
@@ -100,6 +136,28 @@ def play(strategy0, strategy1, score0=0, score1=0, dice=six_sided,
     who = 0  # Who is about to take a turn, 0 (first) or 1 (second)
     # BEGIN PROBLEM 5
     "*** YOUR CODE HERE ***"
+    last_score0 = 0
+    last_score1 = 0
+    while score0 < goal and score1 < goal:
+        if who == 0:
+            num_rolls = strategy0(score0, score1)
+            score = take_turn(num_rolls, score1, dice=dice)
+            if feral_hogs and abs(num_rolls - last_score0) == 2:
+                score0 += 3
+            last_score0 = score
+            score0 += score
+        else:
+            num_rolls = strategy1(score1, score0)
+            score = take_turn(num_rolls, score0, dice=dice)
+            if feral_hogs and abs(num_rolls - last_score1) == 2:
+                score1 += 3
+            last_score1 = score
+            score1 += score
+        if is_swap(score0, score1):
+            score0, score1 = score1, score0
+        who = other(who)
+        say = say(score0, score1)
+    
     # END PROBLEM 5
     # (note that the indentation for the problem 6 prompt (***YOUR CODE HERE***) might be misleading)
     # BEGIN PROBLEM 6
